@@ -1,0 +1,3 @@
+[submodule "extlib/igloo"]
+	path = extlib/igloo
+	url = https://github.com/joakimkarlsson/igloo.git

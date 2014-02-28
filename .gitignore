@@ -1,0 +1,10 @@
+bin/
+lib/
+doc/
+build/
+include/lory/version.h
+CMakeFiles/
+CMakeCache.txt
+Makefile
+Doxyfile
+cmake_install.cmake
