@@ -1,4 +1,5 @@
 # Lory
+[![Build Status](https://travis-ci.org/faultier/lory.png)](https://travis-ci.org/faultier/lory)
 
 This project provides C library and tool that convert image to a selective color image.
 
