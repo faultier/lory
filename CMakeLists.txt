@@ -79,6 +79,7 @@ ELSE(LORY_ANDROID)
     ENDIF(DOXYGEN_FOUND)
 
     IF(LORY_TEST)
+        SET(CMAKE_CXX_FLAGS "-Wall -std=c++0x")
         FILE(GLOB TestSourceFiles t/*.cpp)
         ADD_EXECUTABLE(run_test ${TestSourceFiles} ${LibSourceFiles})
         TARGET_LINK_LIBRARIES(run_test m)
