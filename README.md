@@ -25,22 +25,22 @@ selective color blue:
 If you want command line tool and shared library:
 
 ```shell
-$ mkdir build
-$ cd build
-$ cmake ..
-$ make
-$ sudo make install
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
 ```
 
 Or you want static library for Android:
 
 ```shell
-$ mkdir android-build
-$ cd android-build
+mkdir android-build
+cd android-build
 # APP_ABI is optional. Default 'all'.
-$ cmake -DLORY_ANDROID=ON -DLORY_ANDROID_APP_ABI=armeabi-v7a -DCMAKE_INSTALL_PREFIX=/path/to/android-project ..
-$ make
-$ make install
+cmake -DLORY_ANDROID=ON -DLORY_ANDROID_APP_ABI=armeabi-v7a -DCMAKE_INSTALL_PREFIX=/path/to/android-project ..
+make
+make install
 ```
 
 ## Usage
@@ -71,6 +71,7 @@ if (in.out_color_space == JCS_RGB && in.output_components == 3) {
 #include <jni.h>
 #include <android/log.h>
 #include <android/bitmap.h>
+#include <lory/lory.h>
 
 #define  LOG_TAG    "tag"
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
@@ -117,7 +118,7 @@ JNIEXPORT void JNICALL Java__package_name_ClassName_methodName(JNIEnv *env,
 ### loryconv
 
 ```shell
-$ loryconv -h 0.0 -r 60.0 -o lory-red.jpg lory.jpg
+loryconv -h 0.0 -r 60.0 -o lory-red.jpg lory.jpg
 ```
 
 ## Todo
