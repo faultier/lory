@@ -27,7 +27,7 @@
 #include <lory/convert.h>
 #include "types.h"
 
-extern inline void lory_convert(lory_color_t *color, double hue, double range)
+static inline void convert(lory_color_t *color, double hue, double range)
 {
     double h = lory_getColorH(color);
 
@@ -50,6 +50,11 @@ extern inline void lory_convert(lory_color_t *color, double hue, double range)
     }
 }
 
+void lory_convert(lory_color_t *color, double hue, double range)
+{
+    convert(color, hue, range);
+}
+
 void lory_convert_rgb_array(uint8_t *buffer, uint32_t length, double hue, double range)
 {
     uint32_t i;
@@ -57,7 +62,7 @@ void lory_convert_rgb_array(uint8_t *buffer, uint32_t length, double hue, double
     {
         int ri = i*3, gi = i*3+1, bi = i*3+2;
         lory_color_t *color = lory_createColorWithARGB(0, buffer[ri], buffer[gi], buffer[bi]);
-        lory_convert(color, hue, range);
+        convert(color, hue, range);
         buffer[ri] = color->red;
         buffer[gi] = color->green;
         buffer[bi] = color->blue;
@@ -97,7 +102,7 @@ void lory_convert_argb_code_array(uint32_t *bitmap,
         for (x = 0; x < width; x++)
         {
             lory_color_t *color = code2color(line[x]);
-            lory_convert(color, hue, range);
+            convert(color, hue, range);
             line[x] = color2code(color);
             lory_releaseColor(color);
         }

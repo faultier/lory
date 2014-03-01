@@ -10,7 +10,7 @@ SET(LORY_PATCH_VERSION 0)
 SET(LORY_VERSION
     ${LORY_MAJOR_VERSION}.${LORY_MINOR_VERSION}.${LORY_PATCH_VERSION})
 CONFIGURE_FILE("${PROJECT_SOURCE_DIR}/src/lory/version.h.in"
-    "${PROJECT_SOURCE_DIR}/include/lory/version.h")
+    "${PROJECT_BINARY_DIR}/include/lory/version.h")
 
 OPTION(LORY_ANDROID "Build for Android" OFF)
 OPTION(LORY_TEST "Run tests using igloo" OFF)
@@ -51,6 +51,7 @@ ELSE(LORY_ANDROID)
     SET(CMAKE_C_FLAGS "-Wall -std=c99")
     SET(CMAKE_C_FLAGS_RELEASE "-O2")
     SET(CMAKE_C_FLAGS_DEBUG "-g -O0")
+    SET(CMAKE_CXX_FLAGS "-Wall -std=c++0x")
 
     SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
@@ -58,20 +59,20 @@ ELSE(LORY_ANDROID)
     SET(serial ${LORY_VERSION})
     SET(soserial ${LORY_MAJOR_VERSION})
 
-    INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}" extlib/igloo include)
+    INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}/include" include extlib/igloo)
 
-    FILE(GLOB LibSourceFiles ${PROJECT_SOURCE_DIR}/src/lory/*.c)
+    FILE(GLOB LibSourceFiles src/lory/*.c)
     ADD_LIBRARY(lory SHARED ${LibSourceFiles})
     SET_TARGET_PROPERTIES(lory PROPERTIES VERSION ${serial} SOVERSION ${soserial})
 
     FIND_PACKAGE(JPEG REQUIRED)
-    FILE(GLOB BinSourceFiles ${PROJECT_SOURCE_DIR}/src/loryconv/*.c)
+    FILE(GLOB BinSourceFiles src/loryconv/*.c)
     ADD_EXECUTABLE(loryconv ${BinSourceFiles})
     TARGET_LINK_LIBRARIES(loryconv lory m ${JPEG_LIBRARY})
 
     FIND_PACKAGE(Doxygen)
     IF(DOXYGEN_FOUND)
-        CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile @ONLY)
+        CONFIGURE_FILE(Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile @ONLY)
         ADD_CUSTOM_TARGET(doc
             ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
             WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -79,7 +80,6 @@ ELSE(LORY_ANDROID)
     ENDIF(DOXYGEN_FOUND)
 
     IF(LORY_TEST)
-        SET(CMAKE_CXX_FLAGS "-Wall -std=c++0x")
         FILE(GLOB TestSourceFiles t/*.cpp)
         ADD_EXECUTABLE(run_test ${TestSourceFiles} ${LibSourceFiles})
         TARGET_LINK_LIBRARIES(run_test m)
@@ -92,6 +92,7 @@ ELSE(LORY_ANDROID)
 
     INSTALL(TARGETS lory DESTINATION lib)
     INSTALL(TARGETS loryconv DESTINATION bin)
-    INSTALL(DIRECTORY include DESTINATION include)
+    INSTALL(DIRECTORY include/lory DESTINATION include)
+    INSTALL(FILES "${PROJECT_BINARY_DIR}/include/lory/version.h" DESTINATION "include/lory")
 
 ENDIF(LORY_ANDROID)

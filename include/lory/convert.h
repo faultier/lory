@@ -46,7 +46,7 @@ extern "C" {
  * @param [in] hue          target hue, should be in range of 0.0 to 359.0.
  * @param [in] range        hue range, should be in range of 0.1 to 180.0
  */
-extern inline void lory_convert(lory_color_t *color, double hue, double range);
+void lory_convert(lory_color_t *color, double hue, double range);
 
 /**
  * @fn void lory_convert_rgb_array(uint8_t *buffer, uint32_t length, double hue, double range)
