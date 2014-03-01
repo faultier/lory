@@ -8,10 +8,9 @@ before_install:
     - sudo apt-get install -qq libjpeg-dev
 
 before_script:
-    - git submodule update --init
     - mkdir build
     - cd build
-    - cmake ..
+    - cmake -DLORY_TEST=ON ..
 
 script: make
 

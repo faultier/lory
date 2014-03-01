@@ -67,7 +67,7 @@ ELSE(LORY_ANDROID)
     FIND_PACKAGE(JPEG REQUIRED)
     FILE(GLOB BinSourceFiles ${PROJECT_SOURCE_DIR}/src/loryconv/*.c)
     ADD_EXECUTABLE(loryconv ${BinSourceFiles})
-    TARGET_LINK_LIBRARIES(loryconv lory ${JPEG_LIBRARY})
+    TARGET_LINK_LIBRARIES(loryconv lory m ${JPEG_LIBRARY})
 
     FIND_PACKAGE(Doxygen)
     IF(DOXYGEN_FOUND)
@@ -81,6 +81,7 @@ ELSE(LORY_ANDROID)
     IF(LORY_TEST)
         FILE(GLOB TestSourceFiles t/*.cpp)
         ADD_EXECUTABLE(run_test ${TestSourceFiles} ${LibSourceFiles})
+        TARGET_LINK_LIBRARIES(run_test m)
         ADD_CUSTOM_COMMAND(
             TARGET run_test
             POST_BUILD
