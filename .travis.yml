@@ -1,0 +1,21 @@
+language: c
+
+compiler:
+    - clang
+    - gcc
+
+before_install:
+    - sudo apt-get install -qq libjpeg-dev
+
+before_script:
+    - git submodule update --init
+    - mkdir build
+    - cd build
+    - cmake ..
+
+script: make
+
+notifications:
+    emails:
+        - roteshund+github@gmail.com
+    on_failure: alwais
