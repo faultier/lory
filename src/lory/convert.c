@@ -72,22 +72,22 @@ void lory_convert_rgb_array(uint8_t *buffer, uint32_t length, double hue, double
 
 static inline lory_color_t * code2color(uint32_t code)
 {
+    uint8_t r = (uint8_t)(code & 0x000000FF);
+    uint8_t g = (uint8_t)((code & 0x0000FF00) >>  8);
+    uint8_t b = (uint8_t)((code & 0x00FF0000) >> 16);
     uint8_t a = (uint8_t)((code & 0xFF000000) >> 24);
-    uint8_t r = (uint8_t)((code & 0x00FF0000) >> 16);
-    uint8_t g = (uint8_t)((code & 0x0000FF00) >> 8);
-    uint8_t b = (uint8_t)(code & 0x000000FF);
     return lory_createColorWithARGB(a, r, g, b);
 }
 
 static inline uint32_t color2code(lory_color_t *color)
 {
-    return (((((uint32_t)color->alpha) << 24) & 0xFF000000)
-            | ((((uint32_t)color->red) << 16) & 0x00FF0000)
-            | ((((uint32_t)color->green) << 8) & 0x0000FF00)
-            | (((uint32_t)color->blue) & 0x000000FF));
+    return (  (((uint32_t)color->red          ) & 0x000000FF)
+            | ((((uint32_t)color->green) <<  8) & 0x0000FF00)
+            | ((((uint32_t)color->blue)  << 16) & 0x00FF0000)
+            | ((((uint32_t)color->alpha) << 24) & 0xFF000000));
 }
 
-void lory_convert_argb_code_array(uint32_t *bitmap,
+void lory_convert_rgba_code_array(uint32_t *bitmap,
         uint32_t width,
         uint32_t height,
         uint32_t stride,
@@ -95,10 +95,11 @@ void lory_convert_argb_code_array(uint32_t *bitmap,
         double range)
 {
     uint32_t x, y;
-    uint32_t *line = bitmap;
+    void *pixels = bitmap;
 
     for (y = 0; y < height; y++)
     {
+        uint32_t *line = (uint32_t *)pixels;
         for (x = 0; x < width; x++)
         {
             lory_color_t *color = code2color(line[x]);
@@ -106,6 +107,6 @@ void lory_convert_argb_code_array(uint32_t *bitmap,
             line[x] = color2code(color);
             lory_releaseColor(color);
         }
-        line = (uint32_t *)line + stride;
+        pixels = (char *)pixels + stride;
     }
 }

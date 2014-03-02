@@ -195,52 +195,48 @@ Context(argb_code_array)
     {
         uint32_t pixels[16] = {
             // first line
-            0x00D90000, // red
+            0x000000D9, // red
             0x0000B300, // green
-            0x000000CC, // blue
+            0x00CC0000, // blue
             0x800000FF, // alpha
             0x8000FFFF,
             0x80FFFFFF,
-            0xFFFFFFFF, // garbage
-            0xFFFFFFFF,
 
             // second line
-            0x00D90000,
+            0x000000D9,
             0x0000B300,
-            0x000000CC,
+            0x00CC0000,
             0x8000FF00,
             0x80FFFF00,
-            0x80FF0000,
-            0xFFFFFFFF,
-            0xFFFFFFFF
+            0x80FF0000
         };
 
         int width    = 6;
         int height   = 2;
-        int stride   = 8;
+        int stride   = 6*4;
         double hue   = 0.0;
         double range = 30.0;
 
-        lory_convert_argb_code_array(pixels, width, height, stride, hue, range);
+        lory_convert_rgba_code_array(pixels, width, height, stride, hue, range);
 
         // red color should not be converted.
-        Assert::That(pixels[0], Equals(0x00D90000));
-        Assert::That(pixels[8], Equals(0x00D90000));
+        Assert::That(pixels[0], Equals(0x000000D9));
+        Assert::That(pixels[6], Equals(0x000000D9));
 
         // green color should be converted.
         Assert::That(pixels[1], Equals(0x00B3B3B3));
-        Assert::That(pixels[9], Equals(0x00B3B3B3));
+        Assert::That(pixels[7], Equals(0x00B3B3B3));
 
         // blue color should be converted.
         Assert::That(pixels[2], Equals(0x00CCCCCC));
-        Assert::That(pixels[10], Equals(0x00CCCCCC));
+        Assert::That(pixels[8], Equals(0x00CCCCCC));
 
         // alpha value should be not changed.
         Assert::That((pixels[3] & 0xFF000000), Equals(0x80000000));
         Assert::That((pixels[4] & 0xFF000000), Equals(0x80000000));
         Assert::That((pixels[5] & 0xFF000000), Equals(0x80000000));
+        Assert::That((pixels[9] & 0xFF000000), Equals(0x80000000));
+        Assert::That((pixels[10] & 0xFF000000), Equals(0x80000000));
         Assert::That((pixels[11] & 0xFF000000), Equals(0x80000000));
-        Assert::That((pixels[12] & 0xFF000000), Equals(0x80000000));
-        Assert::That((pixels[13] & 0xFF000000), Equals(0x80000000));
     }
 };

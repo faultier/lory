@@ -37,9 +37,7 @@ Or you want static library for Android:
 ```shell
 mkdir android-build
 cd android-build
-# APP_ABI is optional. Default 'all'.
-cmake -DLORY_ANDROID=ON -DLORY_ANDROID_APP_ABI=armeabi-v7a -DCMAKE_INSTALL_PREFIX=/path/to/android-project ..
-make
+cmake -DLORY_ANDROID=ON -DCMAKE_INSTALL_PREFIX=/path/to/android-project ..
 make install
 ```
 
@@ -65,54 +63,17 @@ if (in.out_color_space == JCS_RGB && in.output_components == 3) {
 }
 ```
 
-### with Android jnigraphics
+### with Android bridge
 
-```c
-#include <jni.h>
-#include <android/log.h>
-#include <android/bitmap.h>
-#include <lory/lory.h>
+```java
+import jp.faultier.android.lory;
+import android.graphics.Bitmap;
 
-#define  LOG_TAG    "tag"
-#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+// Bitmap shuould be mutable and ARGB_8888
+Lory.convertBitmap(bitmap, hue, range);
 
-JNIEXPORT void JNICALL Java__package_name_ClassName_methodName(JNIEnv *env,
-    jobject thiz,
-    jobject bitmap,
-    jdouble hue,
-    jdouble range)
-{
-    int ret;
-    AndroidBitmapInfo info;
-
-    if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0)
-    {
-        LOGE("AndroidBitmap_getInfo() failed! error=%d", ret);
-        return;
-    }
-
-    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888)
-    {
-        LOGE("Bitmap format is not RGBA_8888!");
-        return;
-    }
-
-    void* pixels;
-    if ((ret = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0)
-    {
-        LOGE("AndroidBitmap_lockPixels() failed! error=%d", ret);
-        return;
-    }
-
-    lory_convert_argb_code_array((uint32_t *)pixels,
-            info.width,
-            info.height,
-            info.stride,
-            hue,
-            range);
-
-    AndroidBitmap_unlockPixels(env, bitmap);
-}
+// or use preset
+Lory.convertBitmap(bitmap, Lory.Preset.RED);
 ```
 
 ### loryconv
