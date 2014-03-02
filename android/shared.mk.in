@@ -8,6 +8,5 @@ LOCAL_CFLAGS    := -Wall -std=c99
 LOCAL_LDLIBS    := -llog -lm -ljnigraphics
 
 LOCAL_C_INCLUDES += @CMAKE_SOURCE_DIR@/include
-LOCAL_C_INCLUDES += @CMAKE_BINARY_DIR@/include
 
 include $(BUILD_SHARED_LIBRARY)

@@ -10,7 +10,7 @@ SET(LORY_PATCH_VERSION 0)
 SET(LORY_VERSION
     ${LORY_MAJOR_VERSION}.${LORY_MINOR_VERSION}.${LORY_PATCH_VERSION})
 CONFIGURE_FILE("${PROJECT_SOURCE_DIR}/version.h.in"
-    "${PROJECT_BINARY_DIR}/include/lory/version.h")
+    "${PROJECT_SOURCE_DIR}/include/lory/version.h")
 
 OPTION(LORY_ANDROID "Build for Android" OFF)
 OPTION(LORY_TEST "Run tests using igloo" OFF)
@@ -18,6 +18,15 @@ SET(LORY_ANDROID_NDK_BIN "" CACHE STRING "Path to ndk-build")
 SET(LORY_ANDROID_APP_ABI "all" CACHE STRING "Target android architecture")
 SET(LORY_ANDROID_APP_PLATFORM "android-8" CACHE STRING "Target android platform, required android-8 or later.")
 SET(LORY_ANDROID_INSTALL_TYPE "shared" CACHE STRING "Install type")
+
+FIND_PACKAGE(Doxygen)
+IF(DOXYGEN_FOUND)
+    CONFIGURE_FILE(Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile @ONLY)
+    ADD_CUSTOM_TARGET(doc
+        ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen" VERBATIM)
+ENDIF(DOXYGEN_FOUND)
 
 IF(LORY_ANDROID)
     IF(LORY_ANDROID_NDK_BIN STREQUAL "")
@@ -43,7 +52,20 @@ IF(LORY_ANDROID)
         INSTALL(DIRECTORY src/lory DESTINATION "${LORY_ANDROID_PREFIX}")
         INSTALL(FILES android/bridge.c DESTINATION "${LORY_ANDROID_PREFIX}/lory")
         INSTALL(DIRECTORY include/lory DESTINATION "${LORY_ANDROID_PREFIX}/include")
-        INSTALL(FILES "${PROJECT_BINARY_DIR}/include/lory/version.h" DESTINATION "${LORY_ANDROID_PREFIX}/include/lory")
+
+        ADD_CUSTOM_TARGET(clobber
+            COMMAND "rm" "-rf"
+                "${PROJECT_BINARY_DIR}/Android.mk"
+                "${PROJECT_BINARY_DIR}/Application.mk"
+                "${PROJECT_BINARY_DIR}/doc"
+                "${PROJECT_SOURCE_DIR}/include/lory/version.h"
+                "${PROJECT_BINARY_DIR}/CMakeFiles"
+                "${PROJECT_BINARY_DIR}/CMakeCache.txt"
+                "${PROJECT_BINARY_DIR}/Makefile"
+                "${PROJECT_BINARY_DIR}/Doxyfile"
+                "${PROJECT_BINARY_DIR}/cmake_install.cmake"
+                "${PROJECT_BINARY_DIR}/install_manifest.txt")
+
     ELSE()
         CONFIGURE_FILE("${PROJECT_SOURCE_DIR}/android/shared.mk.in"
             "${PROJECT_BINARY_DIR}/Android.mk")
@@ -72,6 +94,20 @@ IF(LORY_ANDROID)
             COMMENT "Building android library" VERBATIM)
         INSTALL(FILES "${PROJECT_SOURCE_DIR}/android/Lory.java" DESTINATION "${LORY_ANDROID_SRC_DIR}/jp/faultier/android/lory")
         INSTALL(DIRECTORY "${PROJECT_BINARY_DIR}/${LORY_ANDROID_JNILIBS_NAME}" DESTINATION ${LORY_ANDROID_JNILIBS_DEST})
+
+        ADD_CUSTOM_TARGET(clobber
+            COMMAND "rm" "-rf"
+                "${PROJECT_BINARY_DIR}/Android.mk"
+                "${PROJECT_BINARY_DIR}/obj"
+                "${PROJECT_BINARY_DIR}/doc"
+                "${PROJECT_BINARY_DIR}/${LORY_ANDROID_JNILIBS_NAME}"
+                "${PROJECT_SOURCE_DIR}/include/lory/version.h"
+                "${PROJECT_BINARY_DIR}/CMakeFiles"
+                "${PROJECT_BINARY_DIR}/CMakeCache.txt"
+                "${PROJECT_BINARY_DIR}/Makefile"
+                "${PROJECT_BINARY_DIR}/Doxyfile"
+                "${PROJECT_BINARY_DIR}/cmake_install.cmake"
+                "${PROJECT_BINARY_DIR}/install_manifest.txt")
     ENDIF()
 
     MESSAGE(STATUS "INSTALL_PATH: ${CMAKE_INSTALL_PREFIX}/${LORY_ANDROID_PREFIX}")
@@ -89,7 +125,7 @@ ELSE(LORY_ANDROID)
     SET(serial ${LORY_VERSION})
     SET(soserial ${LORY_MAJOR_VERSION})
 
-    INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}/include" include extlib/igloo)
+    INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}/include" include)
 
     FILE(GLOB LibSourceFiles src/lory/*.c)
     ADD_LIBRARY(lory SHARED ${LibSourceFiles})
@@ -100,17 +136,9 @@ ELSE(LORY_ANDROID)
     ADD_EXECUTABLE(loryconv ${BinSourceFiles})
     TARGET_LINK_LIBRARIES(loryconv lory m ${JPEG_LIBRARY})
 
-    FIND_PACKAGE(Doxygen)
-    IF(DOXYGEN_FOUND)
-        CONFIGURE_FILE(Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile @ONLY)
-        ADD_CUSTOM_TARGET(doc
-            ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
-            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-            COMMENT "Generating API documentation with Doxygen" VERBATIM)
-    ENDIF(DOXYGEN_FOUND)
-
     IF(LORY_TEST)
         FILE(GLOB TestSourceFiles t/*.cpp)
+        INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}/include" include extlib/igloo)
         ADD_EXECUTABLE(run_test ${TestSourceFiles} ${LibSourceFiles})
         TARGET_LINK_LIBRARIES(run_test m)
         ADD_CUSTOM_COMMAND(
@@ -123,6 +151,17 @@ ELSE(LORY_ANDROID)
     INSTALL(TARGETS lory DESTINATION lib)
     INSTALL(TARGETS loryconv DESTINATION bin)
     INSTALL(DIRECTORY include/lory DESTINATION include)
-    INSTALL(FILES "${PROJECT_BINARY_DIR}/include/lory/version.h" DESTINATION "include/lory")
 
+    ADD_CUSTOM_TARGET(clobber
+        COMMAND "rm" "-rf"
+            "${PROJECT_BINARY_DIR}/bin"
+            "${PROJECT_BINARY_DIR}/lib"
+            "${PROJECT_BINARY_DIR}/doc"
+            "${PROJECT_BINARY_DIR}/include/lory/version.h"
+            "${PROJECT_BINARY_DIR}/CMakeFiles"
+            "${PROJECT_BINARY_DIR}/CMakeCache.txt"
+            "${PROJECT_BINARY_DIR}/Makefile"
+            "${PROJECT_BINARY_DIR}/Doxyfile"
+            "${PROJECT_BINARY_DIR}/cmake_install.cmake"
+            "${PROJECT_BINARY_DIR}/install_manifest.txt")
 ENDIF(LORY_ANDROID)
