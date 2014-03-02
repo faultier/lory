@@ -25,11 +25,11 @@
 
 #include <math.h>
 #include <lory/convert.h>
-#include "types.h"
+#include "bitmap.h"
 
-static inline void convert(lory_color_t *color, double hue, double range)
+static inline void convert(LoryPixelRef src, LoryPixelRef dest, double hue, double range)
 {
-    double h = lory_getColorH(color);
+    double h = LoryPixelGetHue(src);
 
     double max = hue + (range/2);
     if (max >= 360.0)
@@ -43,70 +43,73 @@ static inline void convert(lory_color_t *color, double hue, double range)
         min += 360.0;
     }
 
+    if (dest != src) {
+        LoryPixelSetAlpha(dest, LoryPixelGetAlpha(src));
+        LoryPixelSetRed(dest, LoryPixelGetRed(src));
+        LoryPixelSetGreen(dest, LoryPixelGetGreen(src));
+        LoryPixelSetBlue(dest, LoryPixelGetBlue(src));
+    }
+
     if ((max > min && (h < min || h > max))
             || (max < min && (h < min && h > max)))
     {
-        lory_setColorS(color, 0.0);
+        LoryPixelSetSaturation(dest, 0.0);
     }
 }
 
-void lory_convert(lory_color_t *color, double hue, double range)
+void LoryConvert(LoryPixelRef src, LoryPixelRef dest, double hue, double range)
 {
-    convert(color, hue, range);
+    convert(src, dest, hue, range);
 }
 
-void lory_convert_rgb_array(uint8_t *buffer, uint32_t length, double hue, double range)
+void LoryConvertJpeglib888(uint8_t *scanline,
+        uint32_t width,
+        double hue,
+        double range)
 {
-    uint32_t i;
-    for (i = 0; i < length; i++)
+    uint32_t x;
+    for (x = 0; x < width; x++)
     {
-        int ri = i*3, gi = i*3+1, bi = i*3+2;
-        lory_color_t *color = lory_createColorWithARGB(0, buffer[ri], buffer[gi], buffer[bi]);
-        convert(color, hue, range);
-        buffer[ri] = color->red;
-        buffer[gi] = color->green;
-        buffer[bi] = color->blue;
-        lory_releaseColor(color);
+        int rx = x*3, gx = x*3+1, bx = x*3+2;
+        LoryPixelRef pixel = LoryPixelCreateARGB(0xFF, scanline[rx], scanline[gx], scanline[bx]);
+        convert(pixel, pixel, hue, range);
+        scanline[rx] = pixel->red;
+        scanline[gx] = pixel->green;
+        scanline[bx] = pixel->blue;
+        LoryPixelRelease(pixel);
     }
+
 }
 
-static inline lory_color_t * code2color(uint32_t code)
-{
-    uint8_t r = (uint8_t)(code & 0x000000FF);
-    uint8_t g = (uint8_t)((code & 0x0000FF00) >>  8);
-    uint8_t b = (uint8_t)((code & 0x00FF0000) >> 16);
-    uint8_t a = (uint8_t)((code & 0xFF000000) >> 24);
-    return lory_createColorWithARGB(a, r, g, b);
-}
-
-static inline uint32_t color2code(lory_color_t *color)
-{
-    return (  (((uint32_t)color->red          ) & 0x000000FF)
-            | ((((uint32_t)color->green) <<  8) & 0x0000FF00)
-            | ((((uint32_t)color->blue)  << 16) & 0x00FF0000)
-            | ((((uint32_t)color->alpha) << 24) & 0xFF000000));
-}
-
-void lory_convert_rgba_code_array(uint32_t *bitmap,
+void LoryConvertAndroid8888(void *pixels,
         uint32_t width,
         uint32_t height,
         uint32_t stride,
         double hue,
         double range)
 {
-    uint32_t x, y;
-    void *pixels = bitmap;
-
+    uint32_t y, x;
     for (y = 0; y < height; y++)
     {
         uint32_t *line = (uint32_t *)pixels;
         for (x = 0; x < width; x++)
         {
-            lory_color_t *color = code2color(line[x]);
-            convert(color, hue, range);
-            line[x] = color2code(color);
-            lory_releaseColor(color);
+            uint8_t r = (uint8_t)(line[x] & 0x000000FF);
+            uint8_t g = (uint8_t)((line[x] & 0x0000FF00) >>  8);
+            uint8_t b = (uint8_t)((line[x] & 0x00FF0000) >> 16);
+            uint8_t a = (uint8_t)((line[x] & 0xFF000000) >> 24);
+
+            LoryPixelRef pixel = LoryPixelCreateARGB(a, r, g, b);
+            convert(pixel, pixel, hue, range);
+
+            line[x] = ((((uint32_t)pixel->red)          & 0x000000FF)
+                    | ((((uint32_t)pixel->green) <<  8) & 0x0000FF00)
+                    | ((((uint32_t)pixel->blue)  << 16) & 0x00FF0000)
+                    | ((((uint32_t)pixel->alpha) << 24) & 0xFF000000));
+
+            LoryPixelRelease(pixel);
         }
+
         pixels = (char *)pixels + stride;
     }
 }

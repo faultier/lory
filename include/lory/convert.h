@@ -32,48 +32,48 @@
 #define LORY_CONVERT_H
 
 #ifdef __cplusplus
+#include <cstdint>
 extern "C" {
+#else
+#include <stdint.h>
 #endif
 
-#include <stdint.h>
-#include <lory/types.h>
+#include <lory/bitmap.h>
 
 /**
- * @fn void lory_convert(lory_color_t *color, double hue, double range)
- * @brief Color convert function.
+ * @fn void LoryConvert(LoryPixelRef src, LoryPixelRef dest, double hue, double range)
+ * @brief Convert pixel to selective color.
  *
- * @param [in,out] color    source color struct.
- * @param [in] hue          target hue, should be in range of 0.0 to 359.0.
- * @param [in] range        hue range, should be in range of 0.1 to 180.0
+ * If pixel's hue value is out range of (hue-range/2) to (hue+range/2), that convert to monotone pixel.
+ *
+ * @param [in] src      Source pixel
+ * @param [out] dest    Destination pixel
+ * @param [in] hue      Target hue between 0.0 and 359.0
+ * @param [in] range    Hue range between 0.1 and 180.0
  */
-void lory_convert(lory_color_t *color, double hue, double range);
-
+void LoryConvert(LoryPixelRef src, LoryPixelRef dest, double hue, double range);
 /**
- * @fn void lory_convert_rgb_array(uint8_t *buffer, uint32_t length, double hue, double range)
- * @brief Color convert function.
+ * @fn void LoryConvertAndroid8888(void *src, void *dest, uint32_t width, uint32_t heigth, uint32_t stride, double hue, double range, LoryPixelFormat format)
+ * @brief Convert bitmap to selective color.
  *
- * @param [in,out] buffer   RGB value's array.
- * @param [in] length       length of array.
- * @param [in] hue          target hue, should be in range of 0.0 to 359.0.
- * @param [in] range        hue range, should be in range of 0.1 to 180.0
- */
-void lory_convert_rgb_array(uint8_t *buffer, uint32_t length, double hue, double range);
-
-/**
- * @fn void lory_convert_rgba_code_array(uint32_t *bitmap, uint32_t width, uint32_t height, uint32_t stride, double hue, double range)
- * @brief Color convert function.
+ * All pixels in bitmap apply LoryConvert.
  *
- * @param [in,out] bitmap   RGBA color code's array.
- * @param [in] width        image width.
- * @param [in] height       image height.
- * @param [in] stride       image stride.
- * @param [in] hue          target hue, should be in range of 0.0 to 359.0.
- * @param [in] range        hue range, should be in range of 0.1 to 180.0
+ * @param [in,out] pixels   Pixel array
+ * @param [in] width        Image width
+ * @param [in] height       Image height
+ * @param [in] stride       Bitmap stride
+ * @param [in] hue          Target hue between 0.0 and 359.0
+ * @param [in] range        Hue range between 0.1 and 180.0
  */
-void lory_convert_rgba_code_array(uint32_t *pixels,
+void LoryConvertAndroid8888(void *pixels,
         uint32_t width,
         uint32_t height,
-        uint32_t stridehue,
+        uint32_t stride,
+        double hue,
+        double range);
+
+void LoryConvertJpeglib888(uint8_t *scanline,
+        uint32_t width,
         double hue,
         double range);
 

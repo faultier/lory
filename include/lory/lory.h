@@ -30,8 +30,8 @@
 extern "C" {
 #endif
 
-#include <lory/version.h>
-#include <lory/types.h>
+#include <lory/definitions.h>
+#include <lory/bitmap.h>
 #include <lory/convert.h>
 
 #ifdef __cplusplus

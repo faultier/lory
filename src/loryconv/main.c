@@ -130,7 +130,7 @@ int main(int argc, char **argv)
                 while (in.output_scanline < in.output_height)
                 {
                     jpeg_read_scanlines(&in, &buffer, 1);
-                    lory_convert_rgb_array(buffer, in.output_width, hue, range);
+                    LoryConvertJpeglib888(buffer, in.output_width, hue, range);
                     jpeg_write_scanlines(&out, &buffer, 1);
                 }
                 free(buffer);

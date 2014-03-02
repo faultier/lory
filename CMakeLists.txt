@@ -9,8 +9,8 @@ SET(LORY_MINOR_VERSION 1)
 SET(LORY_PATCH_VERSION 0)
 SET(LORY_VERSION
     ${LORY_MAJOR_VERSION}.${LORY_MINOR_VERSION}.${LORY_PATCH_VERSION})
-CONFIGURE_FILE("${PROJECT_SOURCE_DIR}/version.h.in"
-    "${PROJECT_SOURCE_DIR}/include/lory/version.h")
+CONFIGURE_FILE("${PROJECT_SOURCE_DIR}/definitions.h.in"
+    "${PROJECT_SOURCE_DIR}/include/lory/definitions.h")
 
 OPTION(LORY_ANDROID "Build for Android" OFF)
 OPTION(LORY_TEST "Run tests using igloo" OFF)
@@ -58,7 +58,7 @@ IF(LORY_ANDROID)
                 "${PROJECT_BINARY_DIR}/Android.mk"
                 "${PROJECT_BINARY_DIR}/Application.mk"
                 "${PROJECT_BINARY_DIR}/doc"
-                "${PROJECT_SOURCE_DIR}/include/lory/version.h"
+                "${PROJECT_SOURCE_DIR}/include/lory/definitions.h"
                 "${PROJECT_BINARY_DIR}/CMakeFiles"
                 "${PROJECT_BINARY_DIR}/CMakeCache.txt"
                 "${PROJECT_BINARY_DIR}/Makefile"
@@ -101,7 +101,7 @@ IF(LORY_ANDROID)
                 "${PROJECT_BINARY_DIR}/obj"
                 "${PROJECT_BINARY_DIR}/doc"
                 "${PROJECT_BINARY_DIR}/${LORY_ANDROID_JNILIBS_NAME}"
-                "${PROJECT_SOURCE_DIR}/include/lory/version.h"
+                "${PROJECT_SOURCE_DIR}/include/lory/definitions.h"
                 "${PROJECT_BINARY_DIR}/CMakeFiles"
                 "${PROJECT_BINARY_DIR}/CMakeCache.txt"
                 "${PROJECT_BINARY_DIR}/Makefile"
@@ -157,7 +157,7 @@ ELSE(LORY_ANDROID)
             "${PROJECT_BINARY_DIR}/bin"
             "${PROJECT_BINARY_DIR}/lib"
             "${PROJECT_BINARY_DIR}/doc"
-            "${PROJECT_BINARY_DIR}/include/lory/version.h"
+            "${PROJECT_BINARY_DIR}/include/lory/definitions.h"
             "${PROJECT_BINARY_DIR}/CMakeFiles"
             "${PROJECT_BINARY_DIR}/CMakeCache.txt"
             "${PROJECT_BINARY_DIR}/Makefile"

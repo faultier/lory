@@ -59,7 +59,7 @@ JNIEXPORT void JNICALL Java_jp_faultier_android_lory_Lory_convertBitmap(JNIEnv *
         return;
     }
 
-    lory_convert_rgba_code_array((uint32_t *)pixels,
+    LoryConvertAndroid8888(pixels,
             info.width,
             info.height,
             info.stride,

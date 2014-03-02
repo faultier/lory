@@ -1,11 +1,15 @@
 bin/
 lib/
+obj/
 doc/
 build/
-include/lory/version.h
+include/lory/definitions.h
+jniLibs
 CMakeFiles/
 CMakeCache.txt
 Makefile
 Doxyfile
+Android.mk
+Application.mk
 cmake_install.cmake
 install_manifest.txt
