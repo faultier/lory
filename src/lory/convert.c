@@ -113,3 +113,34 @@ void LoryConvertAndroid8888(void *pixels,
         pixels = (char *)pixels + stride;
     }
 }
+
+void LoryConvertAndroid565(void *pixels,
+        uint32_t width,
+        uint32_t height,
+        uint32_t stride,
+        double hue,
+        double range)
+{
+    uint32_t y, x;
+    for (y = 0; y < height; y++)
+    {
+        uint16_t *line = (uint16_t *)pixels;
+        for (x = 0; x < width; x++)
+        {
+            uint8_t b = (uint8_t)round((line[x]  &    31)        / 31.0 * 255);
+            uint8_t g = (uint8_t)round(((line[x] &  2016) >>  5) / 63.0 * 255);
+            uint8_t r = (uint8_t)round(((line[x] & 63488) >> 11) / 31.0 * 255);
+
+            LoryPixelRef pixel = LoryPixelCreateARGB(0xFF, r, g, b);
+            convert(pixel, pixel, hue, range);
+
+            line[x] = ((((uint16_t)round(pixel->blue  / 255.0 * 31))        &    31)
+                    | ((((uint16_t)round(pixel->green / 255.0 * 64)) <<  5) &  2016)
+                    | ((((uint16_t)round(pixel->red   / 255.0 * 31)) << 11) & 63488));
+
+            LoryPixelRelease(pixel);
+        }
+
+        pixels = (char *)pixels + stride;
+    }
+}

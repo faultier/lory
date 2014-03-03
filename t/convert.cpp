@@ -225,3 +225,41 @@ When(ANDROID_8888)
         Assert::That(pixels[5], Equals(0xFFCCCCCC));
     }
 };
+
+When(ANDROID_565)
+{
+    Then(should_convert_rgba_code_array)
+    {
+        uint16_t pixels[6] = {
+            // first line
+            (31 << 11), // red
+            (63 << 5),  // green
+            31,         // blue
+
+            // second line
+            (31 << 11),
+            (63 << 5),
+            31,
+        };
+
+        int width    = 3;
+        int height   = 2;
+        int stride   = 3*2;
+        double hue   = 0.0;
+        double range = 30.0;
+
+        LoryConvertAndroid565(pixels, width, height, stride, hue, range);
+
+        // red color should not be converted.
+        Assert::That(pixels[0], Equals((31 << 11)));
+        Assert::That(pixels[3], Equals((31 << 11)));
+
+        // green color should be converted.
+        Assert::That(pixels[1], !Equals((63 << 5)));
+        Assert::That(pixels[4], !Equals((63 << 5)));
+
+        // blue color should be converted.
+        Assert::That(pixels[2], !Equals(31));
+        Assert::That(pixels[5], !Equals(31));
+    }
+};

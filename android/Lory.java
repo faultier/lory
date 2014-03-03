@@ -71,7 +71,7 @@ public class Lory {
 
     public Bitmap convertBitmap(Bitmap src) {
         Bitmap dest = src;
-        if (dest.getConfig() != Bitmap.Config.ARGB_8888 || !dest.isMutable()) {
+        if ((dest.getConfig() != Bitmap.Config.ARGB_8888 && dest.getConfig() != Bitmap.Config.RGB_565) || !dest.isMutable()) {
             dest = src.copy(Bitmap.Config.ARGB_8888, true);
         }
         convertBitmap(dest, hue, range);

@@ -72,10 +72,18 @@ void LoryConvertAndroid8888(void *pixels,
         double hue,
         double range);
 
+void LoryConvertAndroid565(void *pixels,
+        uint32_t width,
+        uint32_t height,
+        uint32_t stride,
+        double hue,
+        double range);
+
 void LoryConvertJpeglib888(uint8_t *scanline,
         uint32_t width,
         double hue,
         double range);
+
 
 #ifdef __cplusplus
 }

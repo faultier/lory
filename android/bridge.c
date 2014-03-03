@@ -46,12 +46,6 @@ JNIEXPORT void JNICALL Java_jp_faultier_android_lory_Lory_convertBitmap(JNIEnv *
         return;
     }
 
-    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888)
-    {
-        LOGE("Bitmap format is not RGBA_8888!");
-        return;
-    }
-
     void* pixels;
     if ((ret = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0)
     {
@@ -59,12 +53,30 @@ JNIEXPORT void JNICALL Java_jp_faultier_android_lory_Lory_convertBitmap(JNIEnv *
         return;
     }
 
-    LoryConvertAndroid8888(pixels,
-            info.width,
-            info.height,
-            info.stride,
-            hue,
-            range);
+    if (info.format == ANDROID_BITMAP_FORMAT_RGBA_8888)
+    {
+        LoryConvertAndroid8888(pixels,
+                info.width,
+                info.height,
+                info.stride,
+                hue,
+                range);
+    }
+    else if (info.format == ANDROID_BITMAP_FORMAT_RGB_565)
+    {
+        LoryConvertAndroid565(pixels,
+                info.width,
+                info.height,
+                info.stride,
+                hue,
+                range);
+    }
+    else
+    {
+        LOGE("Bitmap format is not RGBA_8888 or RGB_565!");
+        return;
+    }
+
 
     AndroidBitmap_unlockPixels(env, bitmap);
 }
