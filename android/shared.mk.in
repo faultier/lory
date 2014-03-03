@@ -4,7 +4,8 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE    := lory
 LOCAL_SRC_FILES := $(wildcard @CMAKE_SOURCE_DIR@/src/lory/*.c) @CMAKE_SOURCE_DIR@/android/bridge.c
-LOCAL_CFLAGS    := -Wall -std=c99
+LOCAL_CFLAGS    := -Wall -std=c99 -fopenmp
+LOCAL_LDFLAGS   := -fopenmp
 LOCAL_LDLIBS    := -llog -lm -ljnigraphics
 
 LOCAL_C_INCLUDES += @CMAKE_SOURCE_DIR@/include

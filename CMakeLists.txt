@@ -12,8 +12,8 @@ SET(LORY_VERSION
 CONFIGURE_FILE("${PROJECT_SOURCE_DIR}/definitions.h.in"
     "${PROJECT_SOURCE_DIR}/include/lory/definitions.h")
 
+OPTION(LORY_USE_OPENMP "Enable OpenMP" OFF)
 OPTION(LORY_ANDROID "Build for Android" OFF)
-OPTION(LORY_TEST "Run tests using igloo" OFF)
 SET(LORY_ANDROID_NDK_BIN "" CACHE STRING "Path to ndk-build")
 SET(LORY_ANDROID_APP_ABI "all" CACHE STRING "Target android architecture")
 SET(LORY_ANDROID_APP_PLATFORM "android-8" CACHE STRING "Target android platform, required android-8 or later.")
@@ -114,10 +114,10 @@ IF(LORY_ANDROID)
 
 ELSE(LORY_ANDROID)
 
-    SET(CMAKE_C_FLAGS "-Wall -std=c99")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-unknown-pragmas -std=c99")
     SET(CMAKE_C_FLAGS_RELEASE "-O2")
     SET(CMAKE_C_FLAGS_DEBUG "-g -O0")
-    SET(CMAKE_CXX_FLAGS "-Wall -std=c++0x")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unknown-pragmas -std=c++0x")
 
     SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
@@ -125,7 +125,7 @@ ELSE(LORY_ANDROID)
     SET(serial ${LORY_VERSION})
     SET(soserial ${LORY_MAJOR_VERSION})
 
-    INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}/include" include)
+    INCLUDE_DIRECTORIES(include extlib/igloo)
 
     FILE(GLOB LibSourceFiles src/lory/*.c)
     ADD_LIBRARY(lory SHARED ${LibSourceFiles})
@@ -136,17 +136,24 @@ ELSE(LORY_ANDROID)
     ADD_EXECUTABLE(loryconv ${BinSourceFiles})
     TARGET_LINK_LIBRARIES(loryconv lory m ${JPEG_LIBRARY})
 
-    IF(LORY_TEST)
-        FILE(GLOB TestSourceFiles t/*.cpp)
-        INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}/include" include extlib/igloo)
-        ADD_EXECUTABLE(run_test ${TestSourceFiles} ${LibSourceFiles})
-        TARGET_LINK_LIBRARIES(run_test m)
-        ADD_CUSTOM_COMMAND(
-            TARGET run_test
-            POST_BUILD
-            COMMAND run_test
-            WORKING_DIRECTORY ./bin)
-    ENDIF(LORY_TEST)
+    FILE(GLOB TestSourceFiles t/*.cpp)
+    ADD_EXECUTABLE(run_test ${TestSourceFiles} ${LibSourceFiles})
+    TARGET_LINK_LIBRARIES(run_test m)
+    ADD_CUSTOM_COMMAND(
+        TARGET run_test
+        POST_BUILD
+        COMMAND run_test
+        WORKING_DIRECTORY ./bin)
+
+    IF(LORY_USE_OPENMP)
+        FIND_PACKAGE(OpenMP)
+        IF(OPENMP_FOUND)
+            SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+            MESSAGE("${OpenMP_C_FLAGS}")
+            MESSAGE("${CMAKE_C_FLAGS}")
+        ENDIF()
+    ENDIF()
 
     INSTALL(TARGETS lory DESTINATION lib)
     INSTALL(TARGETS loryconv DESTINATION bin)
