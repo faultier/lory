@@ -31,7 +31,6 @@ extern "C" {
 #endif
 
 #include <lory/definitions.h>
-#include <lory/bitmap.h>
 #include <lory/convert.h>
 
 #ifdef __cplusplus

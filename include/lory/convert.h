@@ -38,22 +38,23 @@ extern "C" {
 #include <stdint.h>
 #endif
 
-#include <lory/bitmap.h>
-
 /**
- * @fn void LoryConvert(LoryPixelRef src, LoryPixelRef dest, double hue, double range)
+ * @fn void LoryConvert(uint8_t red, uint8_t green, uint8_t blue, double target, double range, uint8_t *dest)
  * @brief Convert pixel to selective color.
  *
  * If pixel's hue value is out range of (hue-range/2) to (hue+range/2), that convert to monotone pixel.
  *
- * @param [in] src      Source pixel
- * @param [out] dest    Destination pixel
- * @param [in] hue      Target hue between 0.0 and 359.0
+ * @param [in] red      Source red value
+ * @param [in] green    Source green value
+ * @param [in] blue     Source blue value
+ * @param [in] target   Target hue between 0.0 and 359.0
  * @param [in] range    Hue range between 0.1 and 180.0
+ * @param [out] dest    Converted color values array [R,G,B]
  */
-void LoryConvert(LoryPixelRef src, LoryPixelRef dest, double hue, double range);
+void LoryConvert(uint8_t red, uint8_t green, uint8_t blue, double target, double range, uint8_t *dest);
+
 /**
- * @fn void LoryConvertAndroid8888(void *src, void *dest, uint32_t width, uint32_t heigth, uint32_t stride, double hue, double range, LoryPixelFormat format)
+ * @fn void LoryConvertAndroid8888(void *src, void *dest, uint32_t width, uint32_t heigth, uint32_t stride, double hue, double range)
  * @brief Convert bitmap to selective color.
  *
  * All pixels in bitmap apply LoryConvert.
