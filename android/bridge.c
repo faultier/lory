@@ -31,6 +31,14 @@
 #define  LOG_TAG    "lory"
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
+static JavaVM *jvm = NULL;
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
+{
+    jvm = vm;
+    return JNI_VERSION_1_6;
+}
+
 JNIEXPORT void JNICALL Java_jp_faultier_android_lory_Lory_convertBitmap(JNIEnv *env,
     jclass class,
     jobject bitmap,
@@ -40,14 +48,24 @@ JNIEXPORT void JNICALL Java_jp_faultier_android_lory_Lory_convertBitmap(JNIEnv *
     int ret;
     AndroidBitmapInfo info;
 
-    if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0)
+    JNIEnv *jenv;
+    int attached = 0;
+    if ((ret = (*jvm)->GetEnv(jvm, (void **)&jenv, JNI_VERSION_1_6)) < 0) {
+        if ((ret = (*jvm)->AttachCurrentThread(jvm, &jenv, NULL)) < 0) {
+            LOGE("AttachCurrentThread() failed! error=%d", ret);
+            return;
+        }
+        attached = 1;
+    }
+
+    if ((ret = AndroidBitmap_getInfo(jenv, bitmap, &info)) < 0)
     {
         LOGE("AndroidBitmap_getInfo() failed! error=%d", ret);
         return;
     }
 
     void* pixels;
-    if ((ret = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0)
+    if ((ret = AndroidBitmap_lockPixels(jenv, bitmap, &pixels)) < 0)
     {
         LOGE("AndroidBitmap_lockPixels() failed! error=%d", ret);
         return;
@@ -78,5 +96,10 @@ JNIEXPORT void JNICALL Java_jp_faultier_android_lory_Lory_convertBitmap(JNIEnv *
     }
 
 
-    AndroidBitmap_unlockPixels(env, bitmap);
+    AndroidBitmap_unlockPixels(jenv, bitmap);
+
+    if (attached)
+    {
+        (*jvm)->DetachCurrentThread(jvm);
+    }
 }
