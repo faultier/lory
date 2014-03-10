@@ -73,6 +73,7 @@ void LoryConvertAndroid8888(void *pixels,
         double hue,
         double range);
 
+
 void LoryConvertAndroid565(void *pixels,
         uint32_t width,
         uint32_t height,

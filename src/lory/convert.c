@@ -26,47 +26,53 @@
 #include <math.h>
 #include <lory/convert.h>
 
+static inline uint8_t umax(uint8_t a, uint8_t b)
+{
+    return a > b ? a : b;
+}
+
+static inline uint8_t umin(uint8_t a, uint8_t b)
+{
+    return a < b ? a : b;
+}
+
 static inline void convert(uint8_t red, uint8_t green, uint8_t blue, double target, double range, uint8_t *dest)
 {
-    double r = (double) red   / 255.0;
-    double g = (double) green / 255.0;
-    double b = (double) blue  / 255.0;
-    double max = fmax(r, fmax(g, b));
-    double min = fmin(r, fmin(g, b));
-
-    dest[0] = red;
-    dest[1] = green;
-    dest[2] = blue;
-
-    if (max == min) {
+    if (red == green && green == blue) {
+        dest[0] = red;
+        dest[1] = green;
+        dest[2] = blue;
         return;
     }
 
+    uint8_t max = umax(red, umax(green, blue));
+    uint8_t min = umin(red, umin(green, blue));
+
     double hue;
-    if (max == r)
+    if (max == red)
     {
-        hue = 60.0 * (g - b) / (max - min);
+        hue = 60.0 * (((double)green - (double)blue) / 255.0) / ((max - min) / 255.0);
     }
-    else if (max == g)
+    else if (max == green)
     {
-        hue = 60.0 * (b - r) / (max - min) + 120.0;
+        hue = 60.0 * (((double)blue - (double)red) / 255.0) / ((max - min) / 255.0) + 120.0;
     }
     else
     {
-        hue = 60.0 * (r - g) / (max - min) + 240.0;
+        hue = 60.0 * (((double)red - (double)green) / 255.0) / ((max - min) / 255.0) + 240.0;
     }
     if (hue < 0)
     {
         hue += 360.0;
     }
 
-    double top = target + (range / 2);
+    double r = range / 2;
+    double top = target + r;
     if (top >= 360.0)
     {
         top -= 360.0;
     }
-
-    double bottom = target - (range / 2);
+    double bottom = target - r;
     if (bottom < 0.0)
     {
         bottom += 360.0;
@@ -75,10 +81,11 @@ static inline void convert(uint8_t red, uint8_t green, uint8_t blue, double targ
     if ((top > bottom && (hue < bottom || hue > top))
             || (top < bottom && (hue < bottom && hue > top)))
     {
-        dest[0] = (uint32_t)(max * 255.0);
-        dest[1] = (uint32_t)(max * 255.0);
-        dest[2] = (uint32_t)(max * 255.0);
-        return;
+        dest[0] = dest[1] = dest[2] = max;
+    } else {
+        dest[0] = red;
+        dest[1] = green;
+        dest[2] = blue;
     }
 }
 
@@ -112,9 +119,9 @@ void LoryConvertAndroid8888(void *pixels,
 {
     for (uint32_t y = 0; y < height; y++)
     {
+        uint32_t *line = (uint32_t *)(pixels + y * stride);
         for (uint32_t x = 0; x < width; x++)
         {
-            uint32_t *line = (uint32_t *)(pixels + y * stride);
             uint8_t r = (uint8_t)(line[x] & 0x000000FF);
             uint8_t g = (uint8_t)((line[x] & 0x0000FF00) >>  8);
             uint8_t b = (uint8_t)((line[x] & 0x00FF0000) >> 16);
