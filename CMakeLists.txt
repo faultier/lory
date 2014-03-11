@@ -63,7 +63,7 @@ ELSE()
     TARGET_LINK_LIBRARIES(loryconv lory m ${JPEG_LIBRARY})
     INSTALL(TARGETS loryconv DESTINATION bin)
 
-    FILE(GLOB TestSourceFiles t/*.cpp)
+    FILE(GLOB TestSourceFiles t/*.cpp t/*.c)
     ADD_EXECUTABLE(run_test ${TestSourceFiles} ${LibSourceFiles})
     TARGET_LINK_LIBRARIES(run_test m)
     ADD_CUSTOM_COMMAND(
@@ -71,11 +71,6 @@ ELSE()
         POST_BUILD
         COMMAND run_test
         WORKING_DIRECTORY ./bin)
-
-    FILE(GLOB BenchSourceFiles src/benchmark/*.c)
-    ADD_EXECUTABLE(benchmark ${BenchSourceFiles})
-    ADD_DEPENDENCIES(benchmark lory)
-    TARGET_LINK_LIBRARIES(benchmark lory m)
 ENDIF()
 
 ADD_CUSTOM_TARGET(clobber

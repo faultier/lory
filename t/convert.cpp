@@ -1,7 +1,10 @@
 #include <igloo/igloo_alt.h>
+#include <iostream>
+#include <cmath>
 using namespace igloo;
 
 #include <lory/convert.h>
+#include "fixtures.h"
 
 When(target_is_red)
 {
@@ -93,107 +96,102 @@ When(target_is_blue)
     }
 };
 
-When(JPEGLIB_888)
+When(RGB_8_SPLIT)
 {
     Then(shuold_convert_rgb_array)
     {
-        uint8_t scanline[9] = {
-            0xD9, 0x00, 0x00, // red
-            0x00, 0xB3, 0x00, // green
-            0x00, 0x00, 0xCC  // blue
-        };
+        uint16_t size = 360;
+        uint8_t **bitmap;
+        LoryTestCreateBitmap((void **)&bitmap, size, LORY_RGB_8_SPLIT);
+        uint8_t *scanline = bitmap[0];
+        LoryConvertJpeglib888(scanline, size, 30.0, 60.0);
 
-        LoryConvertJpeglib888(scanline, 3, 0.0, 30.0);
+        int border = round(60*(size/360.0));
+        for (int i = 0; i < size; i++)
+        {
+            uint8_t r = scanline[i*3];
+            uint8_t g = scanline[i*3+1];
+            uint8_t b = scanline[i*3+2];
 
-        // red color should not be converted.
-        Assert::That((int)scanline[0], Equals(0xD9));
-        Assert::That((int)scanline[1], Equals(0x00));
-        Assert::That((int)scanline[2], Equals(0x00));
+            if (i <= border)
+            {
+                // target hue range should not be converted.
+                Assert::That((int)r, !(Equals((int)g) && Equals((int)b)));
+            }
+            else {
+                // other pixels should be converted.
+                Assert::That((int)r, Equals((int)g) && Equals((int)b));
+            }
+        }
 
-        // green color should be converted.
-        Assert::That((int)scanline[3], Equals(0xB3));
-        Assert::That((int)scanline[4], Equals(0xB3));
-        Assert::That((int)scanline[5], Equals(0xB3));
-
-        // blue color should be converted.
-        Assert::That((int)scanline[6], Equals(0xCC));
-        Assert::That((int)scanline[7], Equals(0xCC));
-        Assert::That((int)scanline[8], Equals(0xCC));
+        LoryTestReleaseBitmap(bitmap, size, LORY_RGB_8_SPLIT);
     }
 };
 
-When(ANDROID_8888)
+When(ABGR_8888)
 {
     Then(should_convert_rgba_code_array)
     {
-        uint32_t pixels[6] = {
-            // first line
-            0xFF0000D9, // red
-            0xFF00B300, // green
-            0xFFCC0000, // blue
+        uint16_t size = 360;
+        uint32_t *bitmap;
+        LoryTestCreateBitmap((void **)&bitmap, size, LORY_ABGR_8888);
 
-            // second line
-            0xFF0000D9, // red
-            0xFF00B300, // green
-            0xFFCC0000, // blue
-        };
+        LoryConvertAndroid8888(bitmap, size, size, size*sizeof(uint32_t), 30.0, 60.0);
 
-        int width    = 3;
-        int height   = 2;
-        int stride   = 3*4;
-        double hue   = 0.0;
-        double range = 30.0;
+        int border = round(60*(size/360.0));
+        for (int i = 0; i < size; i++)
+        {
+            uint32_t pixel = bitmap[i];
 
-        LoryConvertAndroid8888(pixels, width, height, stride, hue, range);
+            if (i <= border)
+            {
+                // target hue range should not be converted.
+                Assert::That((pixel & 0x000000FF),
+                        !(Equals((pixel & 0x0000FF00) >> 8) && Equals((pixel & 0x00FF0000) >> 16)));
+            }
+            else {
+                // other pixels should be converted.
+                Assert::That((pixel & 0x000000FF),
+                        Equals((pixel & 0x0000FF00) >> 8) && Equals((pixel & 0x00FF0000) >> 16));
+            }
+        }
 
-        // red color should not be converted.
-        Assert::That(pixels[0], Equals(0xFF0000D9));
-        Assert::That(pixels[3], Equals(0xFF0000D9));
-
-        // green color should be converted.
-        Assert::That(pixels[1], Equals(0xFFB3B3B3));
-        Assert::That(pixels[4], Equals(0xFFB3B3B3));
-
-        // blue color should be converted.
-        Assert::That(pixels[2], Equals(0xFFCCCCCC));
-        Assert::That(pixels[5], Equals(0xFFCCCCCC));
+        LoryTestReleaseBitmap((void *)bitmap, size, LORY_ABGR_8888);
     }
 };
 
 When(ANDROID_565)
 {
-    Then(should_convert_rgba_code_array)
+    Then(should_convert_rgb_code_array)
     {
-        uint16_t pixels[6] = {
-            // first line
-            (31 << 11), // red
-            (63 << 5),  // green
-            31,         // blue
+        uint16_t size = 360;
+        uint16_t *bitmap;
+        LoryTestCreateBitmap((void **)&bitmap, size, LORY_RGB_565);
 
-            // second line
-            (31 << 11),
-            (63 << 5),
-            31,
-        };
+        LoryConvertAndroid565(bitmap, size, size, size*sizeof(uint16_t), 60.0, 60.0);
 
-        int width    = 3;
-        int height   = 2;
-        int stride   = 3*2;
-        double hue   = 0.0;
-        double range = 30.0;
+        int border1 = round(30*(size/360.0));
+        int border2 = round(90*(size/360.0));
+        for (int i = 0; i < size; i++)
+        {
+            uint16_t pixel = bitmap[i];
 
-        LoryConvertAndroid565(pixels, width, height, stride, hue, range);
+            uint8_t r = (uint8_t) (((pixel & 0xF800) >> 11) / 31.0 * 255.0);
+            uint8_t g = (uint8_t) (((pixel & 0x07E0) >> 5) / 63.0 * 255.0);
+            uint8_t b = (uint8_t) ((pixel & 0x001F) / 31.0 * 255.0);
 
-        // red color should not be converted.
-        Assert::That(pixels[0], Equals((31 << 11)));
-        Assert::That(pixels[3], Equals((31 << 11)));
+            if (i > border1 + 2 && i < border2 - 2)
+            {
+                // target hue range should not be converted.
+                Assert::That((int)r, !(Equals((int)g) && Equals((int)b)));
+            }
+            else if (i < border1 - 2 || i > border2 + 2)
+            {
+                // other pixels should be converted.
+                Assert::That((int)r, Equals((int)g) && Equals((int)b));
+            }
+        }
 
-        // green color should be converted.
-        Assert::That(pixels[1], !Equals((63 << 5)));
-        Assert::That(pixels[4], !Equals((63 << 5)));
-
-        // blue color should be converted.
-        Assert::That(pixels[2], !Equals(31));
-        Assert::That(pixels[5], !Equals(31));
+        LoryTestReleaseBitmap((void *)bitmap, size, LORY_RGB_565);
     }
 };

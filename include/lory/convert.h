@@ -38,6 +38,13 @@ extern "C" {
 #include <stdint.h>
 #endif
 
+typedef enum {
+    LORY_RGB_8_SPLIT = 1,
+    LORY_RGB_565     = 2,
+    LORY_ABGR_4444   = 4,
+    LORY_ABGR_8888   = 6,
+} LoryPixelFormat;
+
 /**
  * @fn void LoryConvert(uint8_t red, uint8_t green, uint8_t blue, double target, double range, uint8_t *dest)
  * @brief Convert pixel to selective color.
